@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
@@ -38,23 +38,11 @@ if (!publishableKey) {
 
 function RootLayoutContent() {
   const { isSignedIn, isLoaded } = useAuth();
-  const [initialCheckComplete, setInitialCheckComplete] = useState(false);
 
-  useEffect(() => {
-    console.log('RootLayoutContent - Auth state:', { isSignedIn, isLoaded });
-    
-    // Add a small delay to ensure Clerk has fully initialized
-    if (isLoaded) {
-      const timer = setTimeout(() => {
-        setInitialCheckComplete(true);
-      }, 100);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [isSignedIn, isLoaded]);
+  console.log('RootLayoutContent - Auth state:', { isSignedIn, isLoaded });
 
-  // Show loading while Clerk is initializing or during initial check
-  if (!isLoaded || !initialCheckComplete) {
+  // Show loading while Clerk is initializing
+  if (!isLoaded) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#DC2626" />
