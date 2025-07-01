@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, Alert } from 'react-native';
 import { useState } from 'react';
-import { Phone, MessageCircle, AlertTriangle, MapPin, Clock, Users, FileText, Camera, Send } from 'lucide-react-native';
+import { Phone, MessageCircle, TriangleAlert as AlertTriangle, MapPin, Clock, Users, FileText, Camera, Send } from 'lucide-react-native';
 import Header from '@/components/Header';
 
 const emergencyHotlines = [
