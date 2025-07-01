@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { useUser, useClerk } from '@clerk/clerk-expo';
+import { useRouter } from 'expo-router';
 import { LogOut, User } from 'lucide-react-native';
 
 interface HeaderProps {
@@ -10,9 +11,20 @@ interface HeaderProps {
 export default function Header({ title, subtitle }: HeaderProps) {
   const { user } = useUser();
   const { signOut } = useClerk();
+  const router = useRouter();
 
-  const handleSignOut = () => {
-    signOut();
+  const handleSignOut = async () => {
+    try {
+      console.log('Signing out user...');
+      await signOut();
+      console.log('Sign out successful, navigating to welcome...');
+      // Explicitly navigate to welcome screen and clear navigation stack
+      router.replace('/(auth)/welcome');
+    } catch (error) {
+      console.error('Error during sign out:', error);
+      // Even if signOut fails, navigate to welcome screen
+      router.replace('/(auth)/welcome');
+    }
   };
 
   return (
