@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Alert } fr
 import { Link } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
-import { ArrowLeft, Mail, Lock, Eye, EyeOff, User, Phone } from 'lucide-react-native';
+import { ArrowLeft, Mail, Lock, Eye, EyeOff, User, Phone, MapPin } from 'lucide-react-native';
 import { TextInput } from 'react-native';
 import { useDummyAuth } from '@/hooks/useDummyAuth';
 
@@ -135,16 +135,19 @@ export default function SignUpScreen() {
 
           <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>Address</Text>
-            <TextInput
-              style={[styles.textInput, styles.textArea]}
-              placeholder="Complete address"
-              placeholderTextColor="#9CA3AF"
-              value={address}
-              onChangeText={setAddress}
-              multiline
-              numberOfLines={3}
-              textAlignVertical="top"
-            />
+            <View style={styles.addressContainer}>
+              <MapPin size={20} color="#6B7280" style={styles.addressIcon} />
+              <TextInput
+                style={styles.addressInput}
+                placeholder="Complete address"
+                placeholderTextColor="#9CA3AF"
+                value={address}
+                onChangeText={setAddress}
+                multiline
+                numberOfLines={3}
+                textAlignVertical="top"
+              />
+            </View>
           </View>
 
           <View style={styles.inputGroup}>
@@ -303,16 +306,29 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Inter-Regular',
     color: '#1F2937',
+  },
+  addressContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#E5E7EB',
     paddingHorizontal: 16,
     paddingVertical: 16,
+    minHeight: 80,
   },
-  textArea: {
-    height: 80,
+  addressIcon: {
+    marginRight: 12,
+    marginTop: 2,
+  },
+  addressInput: {
+    flex: 1,
+    fontSize: 16,
+    fontFamily: 'Inter-Regular',
+    color: '#1F2937',
     textAlignVertical: 'top',
+    minHeight: 48,
   },
   eyeButton: {
     padding: 4,
