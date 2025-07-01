@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
 import { Link } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -15,11 +15,11 @@ export default function WelcomeScreen() {
       >
         <View style={styles.content}>
           <View style={styles.header}>
-            <View style={styles.logoContainer}>
-              <View style={styles.logoCircle}>
-                <Text style={styles.logoText}>A</Text>
-              </View>
-            </View>
+            <Image 
+              source={{ uri: 'https://i0.wp.com/laoagcity.gov.ph/wp-content/uploads/2020/10/cropped-rsz_lc_seal-4.png?fit=512%2C515&ssl=1' }}
+              style={styles.logo}
+              resizeMode="contain"
+            />
             <Text style={styles.title}>Alisto</Text>
             <Text style={styles.subtitle}>Your Digital Gateway to Laoag City</Text>
           </View>
@@ -100,21 +100,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: height * 0.05,
   },
-  logoContainer: {
-    marginBottom: 20,
-  },
-  logoCircle: {
+  logo: {
     width: 100,
     height: 100,
-    borderRadius: 50,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  logoText: {
-    fontSize: 48,
-    fontFamily: 'Inter-Bold',
-    color: '#DC2626',
+    marginBottom: 20,
   },
   title: {
     fontSize: 48,

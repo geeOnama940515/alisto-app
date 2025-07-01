@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSignIn } from '@clerk/clerk-expo';
@@ -118,11 +118,11 @@ export default function SignInScreen() {
             </TouchableOpacity>
           </Link>
           
-          <View style={styles.logoContainer}>
-            <View style={styles.logoCircle}>
-              <Text style={styles.logoText}>A</Text>
-            </View>
-          </View>
+          <Image 
+            source={{ uri: 'https://i0.wp.com/laoagcity.gov.ph/wp-content/uploads/2020/10/cropped-rsz_lc_seal-4.png?fit=512%2C515&ssl=1' }}
+            style={styles.logo}
+            resizeMode="contain"
+          />
           <Text style={styles.title}>Welcome Back</Text>
           <Text style={styles.subtitle}>Sign in to your Alisto account</Text>
         </View>
@@ -140,9 +140,10 @@ export default function SignInScreen() {
             onPress={onGoogleSignIn}
             disabled={loading}
           >
-            <View style={styles.googleIcon}>
-              <Text style={styles.googleIconText}>G</Text>
-            </View>
+            <Image 
+              source={{ uri: 'https://developers.google.com/identity/images/g-logo.png' }}
+              style={styles.googleIcon}
+            />
             <Text style={styles.googleButtonText}>
               {loading ? 'Signing in with Google...' : 'Continue with Google'}
             </Text>
@@ -253,21 +254,10 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  logoContainer: {
-    marginBottom: 24,
-  },
-  logoCircle: {
+  logo: {
     width: 80,
     height: 80,
-    borderRadius: 40,
-    backgroundColor: '#DC2626',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  logoText: {
-    fontSize: 36,
-    fontFamily: 'Inter-Bold',
-    color: '#FFFFFF',
+    marginBottom: 24,
   },
   title: {
     fontSize: 32,
@@ -321,16 +311,7 @@ const styles = StyleSheet.create({
   googleIcon: {
     width: 20,
     height: 20,
-    borderRadius: 10,
-    backgroundColor: '#4285F4',
-    justifyContent: 'center',
-    alignItems: 'center',
     marginRight: 12,
-  },
-  googleIconText: {
-    fontSize: 12,
-    fontFamily: 'Inter-Bold',
-    color: '#FFFFFF',
   },
   googleButtonText: {
     fontSize: 16,
