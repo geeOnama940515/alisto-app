@@ -1,12 +1,8 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, Alert } from 'react-native';
-import { Heart, Users, Code, Mail, Github, Linkedin, MapPin, Phone, Newspaper, Calendar, LifeBuoy, Sun, Clock, LogOut } from 'lucide-react-native';
-import { useClerk, useUser } from '@clerk/clerk-expo';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking } from 'react-native';
+import { Heart, Users, Code, Mail, Github, Linkedin, MapPin, Phone, Newspaper, Calendar, LifeBuoy, Sun, Clock } from 'lucide-react-native';
 import Header from '@/components/Header';
 
 export default function AboutScreen() {
-  const { signOut } = useClerk();
-  const { user } = useUser();
-
   const handleEmailPress = () => {
     Linking.openURL('mailto:g.amano.iii@example.com');
   };
@@ -23,62 +19,11 @@ export default function AboutScreen() {
     Linking.openURL('tel:+63777701234');
   };
 
-  const handleSignOut = async () => {
-    Alert.alert(
-      'Sign Out',
-      'Are you sure you want to sign out?',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Sign Out',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              console.log('Signing out user...');
-              await signOut();
-              console.log('Sign out successful');
-              // Don't manually navigate - let the auth effect handle it
-            } catch (error) {
-              console.error('Error during sign out:', error);
-              // Even if signOut fails, the auth effect should handle navigation
-            }
-          },
-        },
-      ]
-    );
-  };
-
   return (
     <View style={styles.container}>
       <Header title="About Alisto" subtitle="Connecting our community" />
       
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* User Info Section */}
-        {user && (
-          <View style={styles.userSection}>
-            <View style={styles.userInfo}>
-              <View style={styles.userAvatar}>
-                <Text style={styles.userInitials}>
-                  {user.firstName?.[0]}{user.lastName?.[0]}
-                </Text>
-              </View>
-              <View style={styles.userDetails}>
-                <Text style={styles.userName}>
-                  {user.firstName} {user.lastName}
-                </Text>
-                <Text style={styles.userEmail}>{user.primaryEmailAddress?.emailAddress}</Text>
-              </View>
-            </View>
-            <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
-              <LogOut size={20} color="#DC2626" />
-              <Text style={styles.signOutText}>Sign Out</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
         <View style={styles.heroSection}>
           <View style={styles.logoContainer}>
             <View style={styles.logoCircle}>
@@ -279,66 +224,6 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 20,
-  },
-  userSection: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  userInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  userAvatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: '#DC2626',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  userInitials: {
-    fontSize: 20,
-    fontFamily: 'Inter-Bold',
-    color: '#FFFFFF',
-  },
-  userDetails: {
-    flex: 1,
-  },
-  userName: {
-    fontSize: 18,
-    fontFamily: 'Inter-Bold',
-    color: '#1F2937',
-    marginBottom: 4,
-  },
-  userEmail: {
-    fontSize: 14,
-    fontFamily: 'Inter-Regular',
-    color: '#6B7280',
-  },
-  signOutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FEF2F2',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderWidth: 1,
-    borderColor: '#FECACA',
-  },
-  signOutText: {
-    fontSize: 16,
-    fontFamily: 'Inter-SemiBold',
-    color: '#DC2626',
-    marginLeft: 8,
   },
   heroSection: {
     backgroundColor: '#FFFFFF',

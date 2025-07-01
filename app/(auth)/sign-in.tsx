@@ -35,8 +35,8 @@ export default function SignInScreen() {
 
       if (completeSignIn.status === 'complete') {
         await setActive({ session: completeSignIn.createdSessionId });
-        console.log('Sign in successful');
-        // Don't manually navigate - let the auth effect handle it
+        console.log('Sign in successful, navigating to tabs...');
+        router.replace('/(tabs)');
       }
     } catch (err: any) {
       console.error('Sign in error:', err);
@@ -58,8 +58,8 @@ export default function SignInScreen() {
       if (createdSessionId) {
         console.log('Setting active session:', createdSessionId);
         await setActive!({ session: createdSessionId });
-        console.log('Google sign in successful');
-        // Don't manually navigate - let the auth effect handle it
+        console.log('Google sign in successful, navigating to tabs...');
+        router.replace('/(tabs)');
       } else if (signUp && signUp.status === 'missing_requirements') {
         console.log('SignUp missing requirements:', signUp.missingFields);
         
@@ -81,12 +81,12 @@ export default function SignInScreen() {
             
             if (updatedSignUp.status === 'complete') {
               await setActive!({ session: updatedSignUp.createdSessionId });
-              console.log('Google sign up completed');
-              // Don't manually navigate - let the auth effect handle it
+              console.log('Google sign up completed, navigating to tabs...');
+              router.replace('/(tabs)');
             } else if (updatedSignUp.createdSessionId) {
               await setActive!({ session: updatedSignUp.createdSessionId });
-              console.log('Google sign up session created');
-              // Don't manually navigate - let the auth effect handle it
+              console.log('Google sign up session created, navigating to tabs...');
+              router.replace('/(tabs)');
             }
           } catch (updateError: any) {
             console.error('Error updating signup:', updateError);
@@ -119,7 +119,7 @@ export default function SignInScreen() {
           </Link>
           
           <Image 
-            source={{ uri: 'https://stackblitz.com/storage/blobs/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBCRklCVEFFPSIsImV4cCI6bnVsbCwicHVyIjoiYmxvYl9pZCJ9fQ==--3d4ccccf217d462ff3518d1780610822ecd878f0/-icon.png' }}
+            source={require('@/assets/images/image.png')}
             style={styles.logo}
             resizeMode="contain"
           />
