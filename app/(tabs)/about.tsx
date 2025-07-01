@@ -1,8 +1,14 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking } from 'react-native';
-import { Heart, Users, Code, Mail, Github, Linkedin, MapPin, Phone, Newspaper, Calendar, LifeBuoy, Sun, Clock } from 'lucide-react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, Image } from 'react-native';
+import { Heart, Users, Code, Mail, Github, Linkedin, MapPin, Phone, Newspaper, Calendar, LifeBuoy, Sun, Clock, LogOut, User } from 'lucide-react-native';
+import { useUser, useClerk } from '@clerk/clerk-expo';
+import { useRouter } from 'expo-router';
 import Header from '@/components/Header';
 
 export default function AboutScreen() {
+  const { user } = useUser();
+  const { signOut } = useClerk();
+  const router = useRouter();
+
   const handleEmailPress = () => {
     Linking.openURL('mailto:g.amano.iii@example.com');
   };
@@ -19,6 +25,20 @@ export default function AboutScreen() {
     Linking.openURL('tel:+63777701234');
   };
 
+  const handleSignOut = async () => {
+    try {
+      console.log('Signing out user...');
+      await signOut();
+      console.log('Sign out successful, navigating to welcome...');
+      // Explicitly navigate to welcome screen and clear navigation stack
+      router.replace('/(auth)/welcome');
+    } catch (error) {
+      console.error('Error during sign out:', error);
+      // Even if signOut fails, navigate to welcome screen
+      router.replace('/(auth)/welcome');
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Header title="About Alisto" subtitle="Connecting our community" />
@@ -26,9 +46,11 @@ export default function AboutScreen() {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.heroSection}>
           <View style={styles.logoContainer}>
-            <View style={styles.logoCircle}>
-              <Users size={40} color="#D97706" />
-            </View>
+            <Image 
+              source={{ uri: 'https://i0.wp.com/laoagcity.gov.ph/wp-content/uploads/2020/10/cropped-rsz_lc_seal-4.png?fit=512%2C515&ssl=1' }}
+              style={styles.logoImage}
+              resizeMode="contain"
+            />
           </View>
           <Text style={styles.appName}>Alisto</Text>
           <Text style={styles.tagline}>Your Digital Gateway to Laoag City</Text>
@@ -203,6 +225,28 @@ export default function AboutScreen() {
           </View>
         </View>
 
+        {/* User Profile Section */}
+        {user && (
+          <View style={styles.userSection}>
+            <View style={styles.sectionHeader}>
+              <User size={24} color="#DC2626" />
+              <Text style={styles.sectionTitle}>Your Account</Text>
+            </View>
+            <View style={styles.userCard}>
+              <View style={styles.userInfo}>
+                <Text style={styles.userName}>
+                  {user.firstName} {user.lastName}
+                </Text>
+                <Text style={styles.userEmail}>{user.primaryEmailAddress?.emailAddress}</Text>
+              </View>
+              <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
+                <LogOut size={20} color="#FFFFFF" />
+                <Text style={styles.signOutButtonText}>Sign Out</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
         <View style={styles.footerSection}>
           <View style={styles.footerTextContainer}>
             <Text style={styles.footerText}>Made with </Text>
@@ -240,13 +284,9 @@ const styles = StyleSheet.create({
   logoContainer: {
     marginBottom: 16,
   },
-  logoCircle: {
+  logoImage: {
     width: 80,
     height: 80,
-    borderRadius: 40,
-    backgroundColor: '#FEF3C7',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   appName: {
     fontSize: 32,
@@ -535,6 +575,48 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Regular',
     color: '#6B7280',
     lineHeight: 20,
+  },
+  userSection: {
+    marginBottom: 32,
+  },
+  userCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  userInfo: {
+    marginBottom: 16,
+  },
+  userName: {
+    fontSize: 18,
+    fontFamily: 'Inter-SemiBold',
+    color: '#1F2937',
+    marginBottom: 4,
+  },
+  userEmail: {
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
+    color: '#6B7280',
+  },
+  signOutButton: {
+    backgroundColor: '#DC2626',
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  signOutButtonText: {
+    fontSize: 16,
+    fontFamily: 'Inter-SemiBold',
+    color: '#FFFFFF',
+    marginLeft: 8,
   },
   footerSection: {
     alignItems: 'center',
