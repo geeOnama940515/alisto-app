@@ -1,5 +1,5 @@
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
-import { Link } from 'expo-router';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
+import { Link, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSignIn } from '@clerk/clerk-expo';
 import { useState } from 'react';
@@ -13,6 +13,7 @@ WebBrowser.maybeCompleteAuthSession();
 export default function SignInScreen() {
   const { signIn, setActive, isLoaded } = useSignIn();
   const { startOAuthFlow } = useOAuth({ strategy: 'oauth_google' });
+  const router = useRouter();
   
   const [emailAddress, setEmailAddress] = useState('');
   const [password, setPassword] = useState('');
@@ -32,8 +33,13 @@ export default function SignInScreen() {
         password,
       });
 
-      await setActive({ session: completeSignIn.createdSessionId });
+      if (completeSignIn.status === 'complete') {
+        await setActive({ session: completeSignIn.createdSessionId });
+        console.log('Sign in successful, navigating to tabs...');
+        router.replace('/(tabs)');
+      }
     } catch (err: any) {
+      console.error('Sign in error:', err);
       setError(err.errors?.[0]?.message || 'An error occurred during sign in');
     } finally {
       setLoading(false);
@@ -48,9 +54,12 @@ export default function SignInScreen() {
       const { createdSessionId, setActive } = await startOAuthFlow();
 
       if (createdSessionId) {
-        setActive!({ session: createdSessionId });
+        await setActive!({ session: createdSessionId });
+        console.log('Google sign in successful, navigating to tabs...');
+        router.replace('/(tabs)');
       }
     } catch (err: any) {
+      console.error('Google sign in error:', err);
       setError(err.errors?.[0]?.message || 'Google sign-in failed');
     } finally {
       setLoading(false);

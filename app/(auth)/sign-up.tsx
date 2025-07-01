@@ -1,5 +1,5 @@
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
-import { Link } from 'expo-router';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
+import { Link, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSignUp } from '@clerk/clerk-expo';
 import { useState } from 'react';
@@ -13,6 +13,7 @@ WebBrowser.maybeCompleteAuthSession();
 export default function SignUpScreen() {
   const { isLoaded, signUp, setActive } = useSignUp();
   const { startOAuthFlow } = useOAuth({ strategy: 'oauth_google' });
+  const router = useRouter();
   
   const [emailAddress, setEmailAddress] = useState('');
   const [password, setPassword] = useState('');
@@ -43,6 +44,7 @@ export default function SignUpScreen() {
       await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
       setPendingVerification(true);
     } catch (err: any) {
+      console.error('Sign up error:', err);
       setError(err.errors?.[0]?.message || 'An error occurred during sign up');
     } finally {
       setLoading(false);
@@ -60,8 +62,13 @@ export default function SignUpScreen() {
         code,
       });
 
-      await setActive({ session: completeSignUp.createdSessionId });
+      if (completeSignUp.status === 'complete') {
+        await setActive({ session: completeSignUp.createdSessionId });
+        console.log('Sign up verification successful, navigating to tabs...');
+        router.replace('/(tabs)');
+      }
     } catch (err: any) {
+      console.error('Verification error:', err);
       setError(err.errors?.[0]?.message || 'Invalid verification code');
     } finally {
       setLoading(false);
@@ -76,9 +83,12 @@ export default function SignUpScreen() {
       const { createdSessionId, setActive } = await startOAuthFlow();
 
       if (createdSessionId) {
-        setActive!({ session: createdSessionId });
+        await setActive!({ session: createdSessionId });
+        console.log('Google sign up successful, navigating to tabs...');
+        router.replace('/(tabs)');
       }
     } catch (err: any) {
+      console.error('Google sign up error:', err);
       setError(err.errors?.[0]?.message || 'Google sign-up failed');
     } finally {
       setLoading(false);
