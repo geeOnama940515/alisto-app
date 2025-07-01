@@ -58,8 +58,13 @@ export default function SignInScreen() {
       if (createdSessionId) {
         console.log('Setting active session:', createdSessionId);
         await setActive!({ session: createdSessionId });
-        console.log('Google sign in successful, navigating to tabs...');
-        router.replace('/(tabs)');
+        
+        // Add a small delay to ensure Clerk state is updated
+        setTimeout(() => {
+          console.log('Google sign in successful, navigating to tabs...');
+          router.replace('/(tabs)');
+        }, 100);
+        
       } else if (signUp && signUp.status === 'missing_requirements') {
         console.log('SignUp missing requirements:', signUp.missingFields);
         
@@ -79,23 +84,35 @@ export default function SignInScreen() {
             
             console.log('Updated signup status:', updatedSignUp.status);
             
-            if (updatedSignUp.status === 'complete') {
+            if (updatedSignUp.status === 'complete' && updatedSignUp.createdSessionId) {
               await setActive!({ session: updatedSignUp.createdSessionId });
-              console.log('Google sign up completed, navigating to tabs...');
-              router.replace('/(tabs)');
-            } else if (updatedSignUp.createdSessionId) {
-              await setActive!({ session: updatedSignUp.createdSessionId });
-              console.log('Google sign up session created, navigating to tabs...');
-              router.replace('/(tabs)');
+              
+              // Add delay for state update
+              setTimeout(() => {
+                console.log('Google sign up completed, navigating to tabs...');
+                router.replace('/(tabs)');
+              }, 100);
             }
           } catch (updateError: any) {
             console.error('Error updating signup:', updateError);
             setError('Failed to complete Google sign-up. Please try again.');
           }
         }
-      } else if (signIn && signIn.status === 'needs_identifier') {
-        console.log('SignIn needs identifier, this might be a new user');
-        setError('Account not found. Please sign up first or try a different email.');
+      } else if (signIn) {
+        console.log('SignIn flow detected, checking status:', signIn.status);
+        
+        if (signIn.status === 'complete' && signIn.createdSessionId) {
+          await setActive!({ session: signIn.createdSessionId });
+          
+          // Add delay for state update
+          setTimeout(() => {
+            console.log('Google sign in via signIn flow completed, navigating to tabs...');
+            router.replace('/(tabs)');
+          }, 100);
+        } else {
+          console.log('SignIn needs additional steps or failed');
+          setError('Google sign-in was incomplete. Please try again.');
+        }
       } else {
         console.log('No session created from OAuth flow');
         setError('Google sign-in was cancelled or failed');
