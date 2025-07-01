@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
-import { Link, useRouter } from 'expo-router';
+import { Link } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSignIn } from '@clerk/clerk-expo';
 import { useState } from 'react';
@@ -13,7 +13,6 @@ WebBrowser.maybeCompleteAuthSession();
 export default function SignInScreen() {
   const { signIn, setActive, isLoaded } = useSignIn();
   const { startOAuthFlow } = useOAuth({ strategy: 'oauth_google' });
-  const router = useRouter();
   
   const [emailAddress, setEmailAddress] = useState('');
   const [password, setPassword] = useState('');
@@ -36,7 +35,7 @@ export default function SignInScreen() {
       if (completeSignIn.status === 'complete') {
         await setActive({ session: completeSignIn.createdSessionId });
         console.log('Sign in successful');
-        // Don't manually navigate - let the auth effect handle it
+        // Navigation will be handled by the root layout
       }
     } catch (err: any) {
       console.error('Sign in error:', err);
@@ -59,7 +58,7 @@ export default function SignInScreen() {
         console.log('Setting active session:', createdSessionId);
         await setActive!({ session: createdSessionId });
         console.log('Google sign in successful');
-        // Don't manually navigate - let the auth effect handle it
+        // Navigation will be handled by the root layout
       } else if (signUp && signUp.status === 'missing_requirements') {
         console.log('SignUp missing requirements:', signUp.missingFields);
         
@@ -82,11 +81,11 @@ export default function SignInScreen() {
             if (updatedSignUp.status === 'complete') {
               await setActive!({ session: updatedSignUp.createdSessionId });
               console.log('Google sign up completed');
-              // Don't manually navigate - let the auth effect handle it
+              // Navigation will be handled by the root layout
             } else if (updatedSignUp.createdSessionId) {
               await setActive!({ session: updatedSignUp.createdSessionId });
               console.log('Google sign up session created');
-              // Don't manually navigate - let the auth effect handle it
+              // Navigation will be handled by the root layout
             }
           } catch (updateError: any) {
             console.error('Error updating signup:', updateError);
