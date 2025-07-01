@@ -2,11 +2,12 @@ import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { ClerkProvider, ClerkLoaded } from '@clerk/clerk-expo';
+import { ClerkProvider, ClerkLoaded, useAuth } from '@clerk/clerk-expo';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
 import * as SplashScreen from 'expo-splash-screen';
 import * as SecureStore from 'expo-secure-store';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -35,6 +36,39 @@ if (!publishableKey) {
   );
 }
 
+function RootLayoutContent() {
+  const { isSignedIn, isLoaded } = useAuth();
+
+  useEffect(() => {
+    console.log('RootLayoutContent - Auth state:', { isSignedIn, isLoaded });
+  }, [isSignedIn, isLoaded]);
+
+  // Show loading while Clerk is initializing
+  if (!isLoaded) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#DC2626" />
+      </View>
+    );
+  }
+
+  return (
+    <SafeAreaProvider>
+      <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
+        <Stack screenOptions={{ headerShown: false }}>
+          {isSignedIn ? (
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          ) : (
+            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          )}
+          <Stack.Screen name="+not-found" />
+        </Stack>
+        <StatusBar style="auto" />
+      </SafeAreaView>
+    </SafeAreaProvider>
+  );
+}
+
 export default function RootLayout() {
   useFrameworkReady();
 
@@ -58,18 +92,17 @@ export default function RootLayout() {
   return (
     <ClerkProvider tokenCache={tokenCache} publishableKey={publishableKey}>
       <ClerkLoaded>
-        <SafeAreaProvider>
-          <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="index" options={{ headerShown: false }} />
-              <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="+not-found" />
-            </Stack>
-            <StatusBar style="auto" />
-          </SafeAreaView>
-        </SafeAreaProvider>
+        <RootLayoutContent />
       </ClerkLoaded>
     </ClerkProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F9FAFB',
+  },
+});

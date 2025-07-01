@@ -1,26 +1,7 @@
-import { useEffect } from 'react';
-import { Redirect, Tabs } from 'expo-router';
-import { useAuth } from '@clerk/clerk-expo';
+import { Tabs } from 'expo-router';
 import { Chrome as Home, Calendar, LifeBuoy, Eye, Newspaper, Info } from 'lucide-react-native';
 
 export default function TabLayout() {
-  const { isSignedIn, isLoaded } = useAuth();
-
-  useEffect(() => {
-    console.log('TabLayout - Auth state:', { isSignedIn, isLoaded });
-  }, [isSignedIn, isLoaded]);
-
-  // Wait for Clerk to load
-  if (!isLoaded) {
-    return null;
-  }
-
-  // If user is not signed in, redirect to auth
-  if (!isSignedIn) {
-    console.log('TabLayout - User not signed in, redirecting to auth');
-    return <Redirect href="/(auth)/welcome" />;
-  }
-
   return (
     <Tabs
       screenOptions={{
