@@ -1,10 +1,10 @@
 import { Redirect, Stack } from 'expo-router';
-import { useDummyAuth } from '@/hooks/useDummyAuth';
+import { useAuth } from '@clerk/clerk-expo';
 
 export default function AuthLayout() {
-  const { isAuthenticated } = useDummyAuth();
+  const { isSignedIn } = useAuth();
 
-  if (isAuthenticated) {
+  if (isSignedIn) {
     return <Redirect href="/(tabs)" />;
   }
 

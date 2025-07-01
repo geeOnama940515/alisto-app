@@ -1,38 +1,60 @@
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
 import { Link } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSignIn } from '@clerk/clerk-expo';
 import { useState } from 'react';
-import { ArrowLeft, Mail, Lock, Eye, EyeOff, Info } from 'lucide-react-native';
+import { ArrowLeft, Mail, Lock, Eye, EyeOff } from 'lucide-react-native';
 import { TextInput } from 'react-native';
-import { useDummyAuth } from '@/hooks/useDummyAuth';
-import { DUMMY_ACCOUNTS } from '@/utils/dummyAuth';
+import * as WebBrowser from 'expo-web-browser';
+import { useOAuth } from '@clerk/clerk-expo';
+
+WebBrowser.maybeCompleteAuthSession();
 
 export default function SignInScreen() {
-  const { login, isLoading } = useDummyAuth();
+  const { signIn, setActive, isLoaded } = useSignIn();
+  const { startOAuthFlow } = useOAuth({ strategy: 'oauth_google' });
+  
   const [emailAddress, setEmailAddress] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [showTestAccounts, setShowTestAccounts] = useState(false);
 
   const onSignInPress = async () => {
-    if (!emailAddress || !password) {
-      setError('Please fill in all fields');
-      return;
-    }
+    if (!isLoaded) return;
 
+    setLoading(true);
     setError('');
-    const result = await login(emailAddress, password);
-    
-    if (!result.success) {
-      setError(result.error || 'Login failed');
+
+    try {
+      const completeSignIn = await signIn.create({
+        identifier: emailAddress,
+        password,
+      });
+
+      await setActive({ session: completeSignIn.createdSessionId });
+    } catch (err: any) {
+      setError(err.errors?.[0]?.message || 'An error occurred during sign in');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const fillTestAccount = (email: string, password: string) => {
-    setEmailAddress(email);
-    setPassword(password);
-    setShowTestAccounts(false);
+  const onGoogleSignIn = async () => {
+    try {
+      setLoading(true);
+      setError('');
+
+      const { createdSessionId, setActive } = await startOAuthFlow();
+
+      if (createdSessionId) {
+        setActive!({ session: createdSessionId });
+      }
+    } catch (err: any) {
+      setError(err.errors?.[0]?.message || 'Google sign-in failed');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -54,47 +76,31 @@ export default function SignInScreen() {
           <Text style={styles.subtitle}>Sign in to your Alisto account</Text>
         </View>
 
-        {/* Test Accounts Info */}
-        <View style={styles.testAccountsSection}>
-          <TouchableOpacity 
-            style={styles.testAccountsToggle}
-            onPress={() => setShowTestAccounts(!showTestAccounts)}
-          >
-            <Info size={20} color="#3B82F6" />
-            <Text style={styles.testAccountsToggleText}>
-              {showTestAccounts ? 'Hide' : 'Show'} Test Accounts
-            </Text>
-          </TouchableOpacity>
-
-          {showTestAccounts && (
-            <View style={styles.testAccountsList}>
-              <Text style={styles.testAccountsTitle}>Available Test Accounts:</Text>
-              {DUMMY_ACCOUNTS.map((account, index) => (
-                <TouchableOpacity
-                  key={account.id}
-                  style={styles.testAccountItem}
-                  onPress={() => fillTestAccount(account.email, account.password)}
-                >
-                  <View style={styles.testAccountInfo}>
-                    <Text style={styles.testAccountEmail}>{account.email}</Text>
-                    <Text style={styles.testAccountName}>
-                      {account.firstName} {account.lastName} 
-                      {account.role === 'admin' && ' (Admin)'}
-                    </Text>
-                  </View>
-                  <Text style={styles.testAccountPassword}>Password: {account.password}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
-        </View>
-
         <View style={styles.form}>
           {error ? (
             <View style={styles.errorContainer}>
               <Text style={styles.errorText}>{error}</Text>
             </View>
           ) : null}
+
+          {/* Google Sign-In Button */}
+          <TouchableOpacity 
+            style={styles.googleButton}
+            onPress={onGoogleSignIn}
+            disabled={loading}
+          >
+            <Image 
+              source={{ uri: 'https://developers.google.com/identity/images/g-logo.png' }}
+              style={styles.googleIcon}
+            />
+            <Text style={styles.googleButtonText}>Continue with Google</Text>
+          </TouchableOpacity>
+
+          <View style={styles.divider}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>or sign in with email</Text>
+            <View style={styles.dividerLine} />
+          </View>
 
           <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>Email Address</Text>
@@ -141,16 +147,16 @@ export default function SignInScreen() {
           </View>
 
           <TouchableOpacity 
-            style={[styles.signInButton, isLoading && styles.signInButtonDisabled]}
+            style={[styles.signInButton, loading && styles.signInButtonDisabled]}
             onPress={onSignInPress}
-            disabled={isLoading || !emailAddress || !password}
+            disabled={loading || !emailAddress || !password}
           >
             <Text style={styles.signInButtonText}>
-              {isLoading ? 'Signing In...' : 'Sign In'}
+              {loading ? 'Signing In...' : 'Sign In'}
             </Text>
           </TouchableOpacity>
 
-          <View style={styles.divider}>
+          <View style={styles.bottomDivider}>
             <View style={styles.dividerLine} />
             <Text style={styles.dividerText}>Don't have an account?</Text>
             <View style={styles.dividerLine} />
@@ -212,65 +218,6 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     textAlign: 'center',
   },
-  testAccountsSection: {
-    marginHorizontal: 24,
-    marginBottom: 24,
-  },
-  testAccountsToggle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#EBF8FF',
-    borderRadius: 8,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#3B82F6',
-  },
-  testAccountsToggleText: {
-    fontSize: 14,
-    fontFamily: 'Inter-SemiBold',
-    color: '#3B82F6',
-    marginLeft: 8,
-  },
-  testAccountsList: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-    padding: 16,
-    marginTop: 8,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  testAccountsTitle: {
-    fontSize: 14,
-    fontFamily: 'Inter-SemiBold',
-    color: '#1F2937',
-    marginBottom: 12,
-  },
-  testAccountItem: {
-    backgroundColor: '#F9FAFB',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 8,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  testAccountInfo: {
-    marginBottom: 4,
-  },
-  testAccountEmail: {
-    fontSize: 14,
-    fontFamily: 'Inter-SemiBold',
-    color: '#1F2937',
-  },
-  testAccountName: {
-    fontSize: 12,
-    fontFamily: 'Inter-Regular',
-    color: '#6B7280',
-  },
-  testAccountPassword: {
-    fontSize: 12,
-    fontFamily: 'Inter-Medium',
-    color: '#3B82F6',
-  },
   form: {
     paddingHorizontal: 24,
     paddingBottom: 40,
@@ -287,6 +234,55 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Inter-Medium',
     color: '#991B1B',
+  },
+  googleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    marginBottom: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  googleIcon: {
+    width: 20,
+    height: 20,
+    marginRight: 12,
+  },
+  googleButtonText: {
+    fontSize: 16,
+    fontFamily: 'Inter-SemiBold',
+    color: '#1F2937',
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  bottomDivider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 32,
+    marginBottom: 24,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#E5E7EB',
+  },
+  dividerText: {
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
+    color: '#6B7280',
+    marginHorizontal: 16,
   },
   inputGroup: {
     marginBottom: 20,
@@ -325,7 +321,6 @@ const styles = StyleSheet.create({
     paddingVertical: 18,
     alignItems: 'center',
     marginTop: 8,
-    marginBottom: 32,
   },
   signInButtonDisabled: {
     backgroundColor: '#9CA3AF',
@@ -334,22 +329,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Inter-SemiBold',
     color: '#FFFFFF',
-  },
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#E5E7EB',
-  },
-  dividerText: {
-    fontSize: 14,
-    fontFamily: 'Inter-Regular',
-    color: '#6B7280',
-    marginHorizontal: 16,
   },
   signUpButton: {
     backgroundColor: '#FFFFFF',

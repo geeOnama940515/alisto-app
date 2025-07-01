@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { useUser, useClerk } from '@clerk/clerk-expo';
 import { LogOut, User } from 'lucide-react-native';
-import { useDummyAuth } from '@/hooks/useDummyAuth';
 
 interface HeaderProps {
   title: string;
@@ -8,10 +8,11 @@ interface HeaderProps {
 }
 
 export default function Header({ title, subtitle }: HeaderProps) {
-  const { user, logout } = useDummyAuth();
+  const { user } = useUser();
+  const { signOut } = useClerk();
 
   const handleSignOut = () => {
-    logout();
+    signOut();
   };
 
   return (
@@ -33,7 +34,7 @@ export default function Header({ title, subtitle }: HeaderProps) {
               <Text style={styles.userName}>
                 {user.firstName} {user.lastName}
               </Text>
-              <Text style={styles.userEmail}>{user.email}</Text>
+              <Text style={styles.userEmail}>{user.primaryEmailAddress?.emailAddress}</Text>
             </View>
             <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
               <LogOut size={20} color="#FFFFFF" />

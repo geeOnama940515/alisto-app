@@ -1,11 +1,11 @@
 import { Redirect, Tabs } from 'expo-router';
-import { useDummyAuth } from '@/hooks/useDummyAuth';
+import { useAuth } from '@clerk/clerk-expo';
 import { Chrome as Home, Calendar, LifeBuoy, Eye, Newspaper, Info } from 'lucide-react-native';
 
 export default function TabLayout() {
-  const { isAuthenticated } = useDummyAuth();
+  const { isSignedIn } = useAuth();
 
-  if (!isAuthenticated) {
+  if (!isSignedIn) {
     return <Redirect href="/(auth)/welcome" />;
   }
 

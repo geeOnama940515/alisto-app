@@ -1,47 +1,144 @@
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
 import { Link } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSignUp } from '@clerk/clerk-expo';
 import { useState } from 'react';
-import { ArrowLeft, Mail, Lock, Eye, EyeOff, User, Phone, MapPin } from 'lucide-react-native';
+import { ArrowLeft, Mail, Lock, Eye, EyeOff, User, Phone } from 'lucide-react-native';
 import { TextInput } from 'react-native';
-import { useDummyAuth } from '@/hooks/useDummyAuth';
+import * as WebBrowser from 'expo-web-browser';
+import { useOAuth } from '@clerk/clerk-expo';
+
+WebBrowser.maybeCompleteAuthSession();
 
 export default function SignUpScreen() {
-  const { register, isLoading } = useDummyAuth();
+  const { isLoaded, signUp, setActive } = useSignUp();
+  const { startOAuthFlow } = useOAuth({ strategy: 'oauth_google' });
+  
   const [emailAddress, setEmailAddress] = useState('');
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [address, setAddress] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [pendingVerification, setPendingVerification] = useState(false);
+  const [code, setCode] = useState('');
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const onSignUpPress = async () => {
-    if (!emailAddress || !password || !firstName || !lastName || !phoneNumber || !address) {
-      setError('Please fill in all required fields');
-      return;
-    }
+    if (!isLoaded) return;
 
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters long');
-      return;
-    }
-
+    setLoading(true);
     setError('');
-    const result = await register({
-      email: emailAddress,
-      password,
-      firstName,
-      lastName,
-      phoneNumber,
-      address,
-    });
-    
-    if (!result.success) {
-      setError(result.error || 'Registration failed');
+
+    try {
+      await signUp.create({
+        emailAddress,
+        password,
+        firstName,
+        lastName,
+        phoneNumber,
+      });
+
+      await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
+      setPendingVerification(true);
+    } catch (err: any) {
+      setError(err.errors?.[0]?.message || 'An error occurred during sign up');
+    } finally {
+      setLoading(false);
     }
   };
+
+  const onPressVerify = async () => {
+    if (!isLoaded) return;
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const completeSignUp = await signUp.attemptEmailAddressVerification({
+        code,
+      });
+
+      await setActive({ session: completeSignUp.createdSessionId });
+    } catch (err: any) {
+      setError(err.errors?.[0]?.message || 'Invalid verification code');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onGoogleSignUp = async () => {
+    try {
+      setLoading(true);
+      setError('');
+
+      const { createdSessionId, setActive } = await startOAuthFlow();
+
+      if (createdSessionId) {
+        setActive!({ session: createdSessionId });
+      }
+    } catch (err: any) {
+      setError(err.errors?.[0]?.message || 'Google sign-up failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (pendingVerification) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+        <View style={styles.verificationContainer}>
+          <Image 
+            source={require('@/assets/images/image.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <Text style={styles.title}>Verify Your Email</Text>
+          <Text style={styles.subtitle}>
+            We've sent a verification code to {emailAddress}
+          </Text>
+
+          {error ? (
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          ) : null}
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Verification Code</Text>
+            <TextInput
+              style={styles.codeInput}
+              placeholder="Enter 6-digit code"
+              placeholderTextColor="#9CA3AF"
+              value={code}
+              onChangeText={setCode}
+              keyboardType="number-pad"
+              maxLength={6}
+              textAlign="center"
+            />
+          </View>
+
+          <TouchableOpacity 
+            style={[styles.verifyButton, loading && styles.verifyButtonDisabled]}
+            onPress={onPressVerify}
+            disabled={loading || code.length !== 6}
+          >
+            <Text style={styles.verifyButtonText}>
+              {loading ? 'Verifying...' : 'Verify Email'}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={styles.resendButton}
+            onPress={() => signUp?.prepareEmailAddressVerification({ strategy: 'email_code' })}
+          >
+            <Text style={styles.resendButtonText}>Resend Code</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -68,6 +165,25 @@ export default function SignUpScreen() {
               <Text style={styles.errorText}>{error}</Text>
             </View>
           ) : null}
+
+          {/* Google Sign-Up Button */}
+          <TouchableOpacity 
+            style={styles.googleButton}
+            onPress={onGoogleSignUp}
+            disabled={loading}
+          >
+            <Image 
+              source={{ uri: 'https://developers.google.com/identity/images/g-logo.png' }}
+              style={styles.googleIcon}
+            />
+            <Text style={styles.googleButtonText}>Continue with Google</Text>
+          </TouchableOpacity>
+
+          <View style={styles.divider}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>or create account with email</Text>
+            <View style={styles.dividerLine} />
+          </View>
 
           <View style={styles.row}>
             <View style={[styles.inputGroup, styles.halfWidth]}>
@@ -134,23 +250,6 @@ export default function SignUpScreen() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Address</Text>
-            <View style={styles.addressContainer}>
-              <MapPin size={20} color="#6B7280" style={styles.addressIcon} />
-              <TextInput
-                style={styles.addressInput}
-                placeholder="Complete address"
-                placeholderTextColor="#9CA3AF"
-                value={address}
-                onChangeText={setAddress}
-                multiline
-                numberOfLines={3}
-                textAlignVertical="top"
-              />
-            </View>
-          </View>
-
-          <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>Password</Text>
             <View style={styles.inputContainer}>
               <Lock size={20} color="#6B7280" style={styles.inputIcon} />
@@ -184,16 +283,16 @@ export default function SignUpScreen() {
           </View>
 
           <TouchableOpacity 
-            style={[styles.signUpButton, isLoading && styles.signUpButtonDisabled]}
+            style={[styles.signUpButton, loading && styles.signUpButtonDisabled]}
             onPress={onSignUpPress}
-            disabled={isLoading || !emailAddress || !password || !firstName || !lastName}
+            disabled={loading || !emailAddress || !password || !firstName || !lastName}
           >
             <Text style={styles.signUpButtonText}>
-              {isLoading ? 'Creating Account...' : 'Create Account'}
+              {loading ? 'Creating Account...' : 'Create Account'}
             </Text>
           </TouchableOpacity>
 
-          <View style={styles.divider}>
+          <View style={styles.bottomDivider}>
             <View style={styles.dividerLine} />
             <Text style={styles.dividerText}>Already have an account?</Text>
             <View style={styles.dividerLine} />
@@ -272,6 +371,55 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Medium',
     color: '#991B1B',
   },
+  googleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    marginBottom: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  googleIcon: {
+    width: 20,
+    height: 20,
+    marginRight: 12,
+  },
+  googleButtonText: {
+    fontSize: 16,
+    fontFamily: 'Inter-SemiBold',
+    color: '#1F2937',
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  bottomDivider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 32,
+    marginBottom: 24,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#E5E7EB',
+  },
+  dividerText: {
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
+    color: '#6B7280',
+    marginHorizontal: 16,
+  },
   row: {
     flexDirection: 'row',
     gap: 12,
@@ -307,29 +455,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Regular',
     color: '#1F2937',
   },
-  addressContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    minHeight: 80,
-  },
-  addressIcon: {
-    marginRight: 12,
-    marginTop: 2,
-  },
-  addressInput: {
-    flex: 1,
-    fontSize: 16,
-    fontFamily: 'Inter-Regular',
-    color: '#1F2937',
-    textAlignVertical: 'top',
-    minHeight: 48,
-  },
   eyeButton: {
     padding: 4,
   },
@@ -348,7 +473,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 18,
     alignItems: 'center',
-    marginBottom: 32,
   },
   signUpButtonDisabled: {
     backgroundColor: '#9CA3AF',
@@ -357,22 +481,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Inter-SemiBold',
     color: '#FFFFFF',
-  },
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#E5E7EB',
-  },
-  dividerText: {
-    fontSize: 14,
-    fontFamily: 'Inter-Regular',
-    color: '#6B7280',
-    marginHorizontal: 16,
   },
   signInButton: {
     backgroundColor: '#FFFFFF',
@@ -386,5 +494,48 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Inter-SemiBold',
     color: '#DC2626',
+  },
+  verificationContainer: {
+    flex: 1,
+    paddingHorizontal: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  codeInput: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    paddingVertical: 20,
+    fontSize: 24,
+    fontFamily: 'Inter-Bold',
+    color: '#1F2937',
+    letterSpacing: 8,
+  },
+  verifyButton: {
+    backgroundColor: '#DC2626',
+    borderRadius: 12,
+    paddingVertical: 18,
+    alignItems: 'center',
+    width: '100%',
+    marginTop: 24,
+  },
+  verifyButtonDisabled: {
+    backgroundColor: '#9CA3AF',
+  },
+  verifyButtonText: {
+    fontSize: 16,
+    fontFamily: 'Inter-SemiBold',
+    color: '#FFFFFF',
+  },
+  resendButton: {
+    marginTop: 16,
+    paddingVertical: 12,
+  },
+  resendButtonText: {
+    fontSize: 14,
+    fontFamily: 'Inter-Medium',
+    color: '#DC2626',
+    textDecorationLine: 'underline',
   },
 });
