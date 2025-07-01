@@ -60,6 +60,42 @@ export default function SignInScreen() {
         await setActive!({ session: createdSessionId });
         console.log('Google sign in successful, navigating to tabs...');
         router.replace('/(tabs)');
+      } else if (signUp && signUp.status === 'missing_requirements') {
+        console.log('SignUp missing requirements:', signUp.missingFields);
+        
+        // Handle missing username requirement
+        if (signUp.missingFields.includes('username')) {
+          // Generate a username from the email
+          const emailPrefix = signUp.emailAddress?.split('@')[0] || 'user';
+          const randomSuffix = Math.floor(Math.random() * 10000);
+          const generatedUsername = `${emailPrefix}${randomSuffix}`;
+          
+          console.log('Updating signup with username:', generatedUsername);
+          
+          try {
+            const updatedSignUp = await signUp.update({
+              username: generatedUsername,
+            });
+            
+            console.log('Updated signup status:', updatedSignUp.status);
+            
+            if (updatedSignUp.status === 'complete') {
+              await setActive!({ session: updatedSignUp.createdSessionId });
+              console.log('Google sign up completed, navigating to tabs...');
+              router.replace('/(tabs)');
+            } else if (updatedSignUp.createdSessionId) {
+              await setActive!({ session: updatedSignUp.createdSessionId });
+              console.log('Google sign up session created, navigating to tabs...');
+              router.replace('/(tabs)');
+            }
+          } catch (updateError: any) {
+            console.error('Error updating signup:', updateError);
+            setError('Failed to complete Google sign-up. Please try again.');
+          }
+        }
+      } else if (signIn && signIn.status === 'needs_identifier') {
+        console.log('SignIn needs identifier, this might be a new user');
+        setError('Account not found. Please sign up first or try a different email.');
       } else {
         console.log('No session created from OAuth flow');
         setError('Google sign-in was cancelled or failed');
