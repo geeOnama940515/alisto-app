@@ -10,7 +10,7 @@ export default function Header({ title, subtitle }: HeaderProps) {
     <View style={styles.header}>
       <View style={styles.headerContent}>
         <Image 
-          source={require('../assets/images/image.png')}
+          source={{ uri: 'https://stackblitz.com/storage/blobs/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBCRklCVEFFPSIsImV4cCI6bnVsbCwicHVyIjoiYmxvYl9pZCJ9fQ==--3d4ccccf217d462ff3518d1780610822ecd878f0/-icon.png' }}
           style={styles.logo}
           resizeMode="contain"
         />
