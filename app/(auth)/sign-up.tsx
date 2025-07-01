@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSignUp } from '@clerk/clerk-expo';
@@ -141,11 +141,11 @@ export default function SignUpScreen() {
     return (
       <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
         <View style={styles.verificationContainer}>
-          <Image 
-            source={require('@/assets/images/image.png')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
+          <View style={styles.logoContainer}>
+            <View style={styles.logoCircle}>
+              <Text style={styles.logoText}>A</Text>
+            </View>
+          </View>
           <Text style={styles.title}>Verify Your Email</Text>
           <Text style={styles.subtitle}>
             We've sent a verification code to {emailAddress}
@@ -202,11 +202,11 @@ export default function SignUpScreen() {
             </TouchableOpacity>
           </Link>
           
-          <Image 
-            source={require('@/assets/images/image.png')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
+          <View style={styles.logoContainer}>
+            <View style={styles.logoCircle}>
+              <Text style={styles.logoText}>A</Text>
+            </View>
+          </View>
           <Text style={styles.title}>Create Account</Text>
           <Text style={styles.subtitle}>Join the Alisto community</Text>
         </View>
@@ -224,10 +224,9 @@ export default function SignUpScreen() {
             onPress={onGoogleSignUp}
             disabled={loading}
           >
-            <Image 
-              source={{ uri: 'https://developers.google.com/identity/images/g-logo.png' }}
-              style={styles.googleIcon}
-            />
+            <View style={styles.googleIcon}>
+              <Text style={styles.googleIconText}>G</Text>
+            </View>
             <Text style={styles.googleButtonText}>
               {loading ? 'Signing up with Google...' : 'Continue with Google'}
             </Text>
@@ -391,10 +390,21 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  logo: {
+  logoContainer: {
+    marginBottom: 24,
+  },
+  logoCircle: {
     width: 80,
     height: 80,
-    marginBottom: 24,
+    borderRadius: 40,
+    backgroundColor: '#DC2626',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logoText: {
+    fontSize: 36,
+    fontFamily: 'Inter-Bold',
+    color: '#FFFFFF',
   },
   title: {
     fontSize: 32,
@@ -448,7 +458,16 @@ const styles = StyleSheet.create({
   googleIcon: {
     width: 20,
     height: 20,
+    borderRadius: 10,
+    backgroundColor: '#4285F4',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: 12,
+  },
+  googleIconText: {
+    fontSize: 12,
+    fontFamily: 'Inter-Bold',
+    color: '#FFFFFF',
   },
   googleButtonText: {
     fontSize: 16,

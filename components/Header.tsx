@@ -30,11 +30,11 @@ export default function Header({ title, subtitle }: HeaderProps) {
   return (
     <View style={styles.header}>
       <View style={styles.headerContent}>
-        <Image 
-          source={require('../assets/images/image.png')}
-          style={styles.logo}
-          resizeMode="contain"
-        />
+        <View style={styles.logoContainer}>
+          <View style={styles.logoCircle}>
+            <Text style={styles.logoText}>A</Text>
+          </View>
+        </View>
         <View style={styles.headerText}>
           <Text style={styles.title}>{title}</Text>
           {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
@@ -69,10 +69,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  logo: {
+  logoContainer: {
+    marginRight: 15,
+  },
+  logoCircle: {
     width: 50,
     height: 50,
-    marginRight: 15,
+    borderRadius: 25,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logoText: {
+    fontSize: 24,
+    fontFamily: 'Inter-Bold',
+    color: '#DC2626',
   },
   headerText: {
     flex: 1,

@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { Link } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -15,11 +15,11 @@ export default function WelcomeScreen() {
       >
         <View style={styles.content}>
           <View style={styles.header}>
-            <Image 
-              source={require('@/assets/images/image.png')}
-              style={styles.logo}
-              resizeMode="contain"
-            />
+            <View style={styles.logoContainer}>
+              <View style={styles.logoCircle}>
+                <Text style={styles.logoText}>A</Text>
+              </View>
+            </View>
             <Text style={styles.title}>Alisto</Text>
             <Text style={styles.subtitle}>Your Digital Gateway to Laoag City</Text>
           </View>
@@ -100,10 +100,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: height * 0.05,
   },
-  logo: {
+  logoContainer: {
+    marginBottom: 20,
+  },
+  logoCircle: {
     width: 100,
     height: 100,
-    marginBottom: 20,
+    borderRadius: 50,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logoText: {
+    fontSize: 48,
+    fontFamily: 'Inter-Bold',
+    color: '#DC2626',
   },
   title: {
     fontSize: 48,
