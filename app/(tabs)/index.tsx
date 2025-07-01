@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Image } from 'react-native';
 import { useState } from 'react';
-import { Bell, ChevronRight, X, Calendar, Clock, MapPin, Users } from 'lucide-react-native';
+import { Bell, ChevronRight, X, Calendar, Clock, MapPin, Users, Newspaper, LifeBuoy, Building, Phone, AlertTriangle, Camera } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import Header from '@/components/Header';
@@ -33,18 +33,6 @@ const newsData = [
   },
   {
     id: 3,
-    title: 'Road Improvement Project Completed',
-    summary: 'The 2.5-kilometer road improvement project along Rizal Street has been completed, improving traffic flow in the city center.',
-    date: 'Jan 10, 2024',
-    time: '11:15 AM',
-    image: 'https://images.pexels.com/photos/280221/pexels-photo-280221.jpeg?auto=compress&cs=tinysrgb&w=800',
-    fullContent: 'The major road improvement project along Rizal Street has been successfully completed, marking a significant milestone in the city\'s infrastructure development.\n\nThe project included complete road resurfacing, installation of new drainage systems, improved street lighting, and the addition of designated bike lanes. The 2.5-kilometer stretch now features wider lanes and better traffic management systems.\n\nThe improved road is expected to reduce travel time by 30% and enhance safety for both motorists and pedestrians. The project was completed on schedule and within budget, demonstrating the city\'s commitment to efficient public works management.',
-    location: 'Rizal Street',
-    attendees: 'City-wide impact',
-    category: 'Infrastructure',
-  },
-  {
-    id: 4,
     title: 'Free Medical Mission for Senior Citizens',
     summary: 'The City Health Office announces a free medical mission specifically for senior citizens aged 60 and above.',
     date: 'Jan 8, 2024',
@@ -55,17 +43,44 @@ const newsData = [
     attendees: '300+ seniors expected',
     category: 'Health',
   },
+];
+
+const quickAccessItems = [
   {
-    id: 5,
-    title: 'Youth Skills Training Program Launch',
-    summary: 'A new skills training program for out-of-school youth will begin next week, offering courses in digital literacy and entrepreneurship.',
-    date: 'Jan 5, 2024',
-    time: '1:00 PM',
-    image: 'https://images.pexels.com/photos/1181533/pexels-photo-1181533.jpeg?auto=compress&cs=tinysrgb&w=800',
-    fullContent: 'The city government launches an innovative skills training program designed to empower out-of-school youth with practical skills for the modern economy.\n\nThe program offers courses in digital literacy, basic computer skills, social media marketing, and entrepreneurship fundamentals. Participants will also receive mentorship from successful local business owners and access to microfinance opportunities.\n\nThe 6-week program is completely free and includes certificates upon completion. Priority will be given to youth from low-income families, with the goal of reducing unemployment and promoting economic empowerment.',
-    location: 'City Training Center',
-    attendees: '50 participants',
-    category: 'Education',
+    id: 'news',
+    title: 'News & Events',
+    description: 'Latest updates and announcements',
+    icon: Newspaper,
+    color: '#3B82F6',
+    backgroundColor: '#DBEAFE',
+    route: '/news',
+  },
+  {
+    id: 'services',
+    title: 'City Services',
+    description: 'Book appointments and access services',
+    icon: Building,
+    color: '#10B981',
+    backgroundColor: '#D1FAE5',
+    route: '/services',
+  },
+  {
+    id: 'assistance',
+    title: 'Get Assistance',
+    description: 'Emergency hotlines and report issues',
+    icon: LifeBuoy,
+    color: '#F59E0B',
+    backgroundColor: '#FEF3C7',
+    route: '/assistance',
+  },
+  {
+    id: 'emergency',
+    title: 'Emergency',
+    description: 'Call 911 for immediate help',
+    icon: AlertTriangle,
+    color: '#EF4444',
+    backgroundColor: '#FEE2E2',
+    action: 'emergency',
   },
 ];
 
@@ -110,13 +125,20 @@ export default function HomeScreen() {
     setSelectedNews(null);
   };
 
-  const handleSeeAllNews = () => {
-    router.push('/news');
+  const handleQuickAccessPress = (item: typeof quickAccessItems[0]) => {
+    if (item.action === 'emergency') {
+      // Handle emergency call
+      console.log('Emergency call initiated');
+      return;
+    }
+    
+    if (item.route) {
+      router.push(item.route as any);
+    }
   };
 
   const handleEventPress = (eventId: number) => {
     console.log('Event pressed:', eventId);
-    // In a real app, this would show event details or add to calendar
   };
 
   return (
@@ -139,16 +161,43 @@ export default function HomeScreen() {
           </Text>
         </View>
 
+        {/* Quick Access Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Quick Access</Text>
+          <View style={styles.quickAccessGrid}>
+            {quickAccessItems.map((item) => {
+              const IconComponent = item.icon;
+              return (
+                <TouchableOpacity
+                  key={item.id}
+                  style={styles.quickAccessCard}
+                  onPress={() => handleQuickAccessPress(item)}
+                >
+                  <View style={[styles.quickAccessIcon, { backgroundColor: item.backgroundColor }]}>
+                    <IconComponent size={24} color={item.color} />
+                  </View>
+                  <Text style={styles.quickAccessTitle}>{item.title}</Text>
+                  <Text style={styles.quickAccessDescription}>{item.description}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+
+        {/* Latest News Section */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Latest News & Events</Text>
-            <TouchableOpacity style={styles.seeAllButton} onPress={handleSeeAllNews}>
+            <Text style={styles.sectionTitle}>Latest News</Text>
+            <TouchableOpacity 
+              style={styles.seeAllButton} 
+              onPress={() => router.push('/news')}
+            >
               <Text style={styles.seeAllText}>See All</Text>
               <ChevronRight size={16} color="#DC2626" />
             </TouchableOpacity>
           </View>
 
-          {newsData.slice(0, 3).map((news) => (
+          {newsData.slice(0, 2).map((news) => (
             <NewsCard
               key={news.id}
               title={news.title}
@@ -161,9 +210,10 @@ export default function HomeScreen() {
           ))}
         </View>
 
+        {/* Upcoming Events */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Upcoming Events</Text>
-          {upcomingEvents.map((event) => (
+          {upcomingEvents.slice(0, 2).map((event) => (
             <TouchableOpacity 
               key={event.id} 
               style={styles.eventCard}
@@ -182,10 +232,19 @@ export default function HomeScreen() {
               </View>
             </TouchableOpacity>
           ))}
+          
+          <TouchableOpacity 
+            style={styles.viewMoreEvents}
+            onPress={() => router.push('/news')}
+          >
+            <Text style={styles.viewMoreText}>View All Events</Text>
+            <ChevronRight size={16} color="#DC2626" />
+          </TouchableOpacity>
         </View>
 
+        {/* Quick Stats */}
         <View style={styles.quickStats}>
-          <Text style={styles.sectionTitle}>Quick Stats</Text>
+          <Text style={styles.sectionTitle}>City at a Glance</Text>
           <View style={styles.statsGrid}>
             <View style={styles.statCard}>
               <Text style={styles.statNumber}>15</Text>
@@ -204,6 +263,21 @@ export default function HomeScreen() {
               <Text style={styles.statLabel}>Emergency Response</Text>
             </View>
           </View>
+        </View>
+
+        {/* Emergency Contact */}
+        <View style={styles.emergencySection}>
+          <View style={styles.emergencyHeader}>
+            <AlertTriangle size={20} color="#DC2626" />
+            <Text style={styles.emergencyTitle}>Emergency Contact</Text>
+          </View>
+          <Text style={styles.emergencyText}>
+            For life-threatening emergencies, call 911 immediately
+          </Text>
+          <TouchableOpacity style={styles.emergencyButton}>
+            <Phone size={20} color="#FFFFFF" />
+            <Text style={styles.emergencyButtonText}>Call 911</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
 
@@ -326,6 +400,45 @@ const styles = StyleSheet.create({
     color: '#DC2626',
     marginRight: 4,
   },
+  quickAccessGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  quickAccessCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+    width: '48%',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  quickAccessIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  quickAccessTitle: {
+    fontSize: 14,
+    fontFamily: 'Inter-SemiBold',
+    color: '#1F2937',
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  quickAccessDescription: {
+    fontSize: 12,
+    fontFamily: 'Inter-Regular',
+    color: '#6B7280',
+    textAlign: 'center',
+    lineHeight: 16,
+  },
   eventCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
@@ -377,6 +490,18 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     marginLeft: 4,
   },
+  viewMoreEvents: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+  },
+  viewMoreText: {
+    fontSize: 14,
+    fontFamily: 'Inter-Medium',
+    color: '#DC2626',
+    marginRight: 4,
+  },
   quickStats: {
     marginBottom: 24,
   },
@@ -409,6 +534,48 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Medium',
     color: '#6B7280',
     textAlign: 'center',
+  },
+  emergencySection: {
+    backgroundColor: '#FEF2F2',
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 20,
+    borderLeftWidth: 4,
+    borderLeftColor: '#DC2626',
+  },
+  emergencyHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  emergencyTitle: {
+    fontSize: 18,
+    fontFamily: 'Inter-SemiBold',
+    color: '#991B1B',
+    marginLeft: 8,
+  },
+  emergencyText: {
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
+    color: '#991B1B',
+    marginBottom: 16,
+    lineHeight: 20,
+  },
+  emergencyButton: {
+    backgroundColor: '#DC2626',
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'flex-start',
+  },
+  emergencyButtonText: {
+    fontSize: 14,
+    fontFamily: 'Inter-SemiBold',
+    color: '#FFFFFF',
+    marginLeft: 8,
   },
   // Modal Styles
   modalContainer: {
