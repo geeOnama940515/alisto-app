@@ -56,18 +56,23 @@ function RootLayoutContent() {
       inTabsGroup 
     });
 
-    // Use setTimeout to avoid navigation conflicts
-    setTimeout(() => {
-      if (isSignedIn && !inTabsGroup) {
-        // User is signed in but not in tabs, redirect to tabs
-        console.log('Redirecting signed in user to tabs');
-        router.replace('/(tabs)');
-      } else if (!isSignedIn && !inAuthGroup) {
-        // User is not signed in and not in auth, redirect to welcome
-        console.log('Redirecting unsigned user to welcome');
-        router.replace('/(auth)/welcome');
-      }
-    }, 100);
+    if (isSignedIn && inAuthGroup) {
+      // User is signed in but in auth group, redirect to tabs
+      console.log('Redirecting signed in user to tabs');
+      router.replace('/(tabs)');
+    } else if (!isSignedIn && inTabsGroup) {
+      // User is not signed in but in tabs group, redirect to auth
+      console.log('Redirecting unsigned user to auth');
+      router.replace('/(auth)/welcome');
+    } else if (!isSignedIn && !inAuthGroup && !inTabsGroup) {
+      // User is not signed in and not in any group, go to welcome
+      console.log('Redirecting to welcome');
+      router.replace('/(auth)/welcome');
+    } else if (isSignedIn && !inTabsGroup && !inAuthGroup) {
+      // User is signed in but not in any group, go to tabs
+      console.log('Redirecting to tabs');
+      router.replace('/(tabs)');
+    }
   }, [isSignedIn, isLoaded, segments]);
 
   // Show loading while Clerk is initializing
