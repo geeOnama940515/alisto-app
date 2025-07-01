@@ -50,13 +50,19 @@ export default function SignInScreen() {
     try {
       setLoading(true);
       setError('');
+      console.log('Starting Google OAuth flow...');
 
-      const { createdSessionId, setActive } = await startOAuthFlow();
+      const { createdSessionId, signIn, signUp, setActive } = await startOAuthFlow();
+      console.log('OAuth flow result:', { createdSessionId, signIn, signUp });
 
       if (createdSessionId) {
+        console.log('Setting active session:', createdSessionId);
         await setActive!({ session: createdSessionId });
         console.log('Google sign in successful, navigating to tabs...');
         router.replace('/(tabs)');
+      } else {
+        console.log('No session created from OAuth flow');
+        setError('Google sign-in was cancelled or failed');
       }
     } catch (err: any) {
       console.error('Google sign in error:', err);
@@ -94,7 +100,7 @@ export default function SignInScreen() {
 
           {/* Google Sign-In Button */}
           <TouchableOpacity 
-            style={styles.googleButton}
+            style={[styles.googleButton, loading && styles.googleButtonDisabled]}
             onPress={onGoogleSignIn}
             disabled={loading}
           >
@@ -102,7 +108,9 @@ export default function SignInScreen() {
               source={{ uri: 'https://developers.google.com/identity/images/g-logo.png' }}
               style={styles.googleIcon}
             />
-            <Text style={styles.googleButtonText}>Continue with Google</Text>
+            <Text style={styles.googleButtonText}>
+              {loading ? 'Signing in with Google...' : 'Continue with Google'}
+            </Text>
           </TouchableOpacity>
 
           <View style={styles.divider}>
@@ -260,6 +268,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 2,
     elevation: 2,
+  },
+  googleButtonDisabled: {
+    opacity: 0.6,
   },
   googleIcon: {
     width: 20,
