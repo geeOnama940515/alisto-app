@@ -119,7 +119,7 @@ export default function SignInScreen() {
           </Link>
           
           <Image 
-            source={require('@/assets/images/icon.png')}
+            source={require('@/assets/images/image.png')}
             style={styles.logo}
             resizeMode="contain"
           />
