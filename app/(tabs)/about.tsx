@@ -1,13 +1,11 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, Alert } from 'react-native';
 import { Heart, Users, Code, Mail, Github, Linkedin, MapPin, Phone, Newspaper, Calendar, LifeBuoy, Sun, Clock, LogOut } from 'lucide-react-native';
 import { useClerk, useUser } from '@clerk/clerk-expo';
-import { useRouter } from 'expo-router';
 import Header from '@/components/Header';
 
 export default function AboutScreen() {
   const { signOut } = useClerk();
   const { user } = useUser();
-  const router = useRouter();
 
   const handleEmailPress = () => {
     Linking.openURL('mailto:g.amano.iii@example.com');
@@ -41,13 +39,11 @@ export default function AboutScreen() {
             try {
               console.log('Signing out user...');
               await signOut();
-              console.log('Sign out successful, navigating to welcome...');
-              // Explicitly navigate to welcome screen and clear navigation stack
-              router.replace('/(auth)/welcome');
+              console.log('Sign out successful');
+              // Don't manually navigate - let the auth effect handle it
             } catch (error) {
               console.error('Error during sign out:', error);
-              // Even if signOut fails, navigate to welcome screen
-              router.replace('/(auth)/welcome');
+              // Even if signOut fails, the auth effect should handle navigation
             }
           },
         },

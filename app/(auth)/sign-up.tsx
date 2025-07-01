@@ -64,8 +64,8 @@ export default function SignUpScreen() {
 
       if (completeSignUp.status === 'complete') {
         await setActive({ session: completeSignUp.createdSessionId });
-        console.log('Sign up verification successful, navigating to tabs...');
-        router.replace('/(tabs)');
+        console.log('Sign up verification successful');
+        // Don't manually navigate - let the auth effect handle it
       }
     } catch (err: any) {
       console.error('Verification error:', err);
@@ -87,8 +87,8 @@ export default function SignUpScreen() {
       if (createdSessionId) {
         console.log('Setting active session:', createdSessionId);
         await setActive!({ session: createdSessionId });
-        console.log('Google sign up successful, navigating to tabs...');
-        router.replace('/(tabs)');
+        console.log('Google sign up successful');
+        // Don't manually navigate - let the auth effect handle it
       } else if (signUp && signUp.status === 'missing_requirements') {
         console.log('SignUp missing requirements:', signUp.missingFields);
         
@@ -110,12 +110,12 @@ export default function SignUpScreen() {
             
             if (updatedSignUp.status === 'complete') {
               await setActive!({ session: updatedSignUp.createdSessionId });
-              console.log('Google sign up completed, navigating to tabs...');
-              router.replace('/(tabs)');
+              console.log('Google sign up completed');
+              // Don't manually navigate - let the auth effect handle it
             } else if (updatedSignUp.createdSessionId) {
               await setActive!({ session: updatedSignUp.createdSessionId });
-              console.log('Google sign up session created, navigating to tabs...');
-              router.replace('/(tabs)');
+              console.log('Google sign up session created');
+              // Don't manually navigate - let the auth effect handle it
             }
           } catch (updateError: any) {
             console.error('Error updating signup:', updateError);
