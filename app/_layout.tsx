@@ -48,7 +48,7 @@ console.log('========================');
 
 if (!publishableKey) {
   throw new Error(
-    'Missing Publishable Key. Please check your app.config.js and EAS secrets. Key: ' + publishableKey
+    'Missing Publishable Key. Please check your app.config.js and environment variables. Key: ' + publishableKey
   );
 }
 
@@ -78,7 +78,7 @@ function useProtectedRoute(user: any) {
       console.log('Redirecting to tabs - user is signed in');
       router.replace('/(tabs)');
     }
-  }, [user, segments]);
+  }, [user, segments, router]);
 }
 
 function RootLayoutContent() {
