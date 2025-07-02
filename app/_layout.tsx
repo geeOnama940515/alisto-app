@@ -52,39 +52,45 @@ if (!publishableKey) {
   );
 }
 
-function useProtectedRoute(user: any) {
+function useProtectedRoute(isSignedIn: boolean, isLoaded: boolean) {
   const segments = useSegments();
   const router = useRouter();
 
   useEffect(() => {
+    // Don't do anything if Clerk hasn't loaded yet
+    if (!isLoaded) {
+      return;
+    }
+
     const inAuthGroup = segments[0] === '(auth)';
 
     console.log('=== NAVIGATION DEBUG ===');
-    console.log('User signed in:', !!user);
+    console.log('User signed in:', isSignedIn);
     console.log('Current segments:', segments);
     console.log('In auth group:', inAuthGroup);
+    console.log('Clerk loaded:', isLoaded);
     console.log('========================');
 
     if (
       // If the user is not signed in and the initial segment is not anything in the auth group.
-      !user &&
+      !isSignedIn &&
       !inAuthGroup
     ) {
       // Redirect to the sign-in page.
       console.log('Redirecting to welcome page - user not signed in');
       router.replace('/(auth)/welcome');
-    } else if (user && inAuthGroup) {
+    } else if (isSignedIn && inAuthGroup) {
       // Redirect away from the auth page.
       console.log('Redirecting to tabs - user is signed in');
       router.replace('/(tabs)');
     }
-  }, [user, segments, router]);
+  }, [isSignedIn, isLoaded, segments, router]);
 }
 
 function RootLayoutContent() {
   const { user, isLoaded, isSignedIn } = useAuth();
   
-  useProtectedRoute(user);
+  useProtectedRoute(isSignedIn, isLoaded);
 
   useEffect(() => {
     console.log('RootLayoutContent - Auth state:', { 
