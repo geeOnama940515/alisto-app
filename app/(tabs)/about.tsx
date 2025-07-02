@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, Image, Alert } from 'react-native';
 import { Heart, Users, Code, Mail, Github, Linkedin, MapPin, Phone, Newspaper, Calendar, LifeBuoy, Sun, Clock, LogOut, User } from 'lucide-react-native';
 import { useUser, useClerk } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
@@ -27,15 +27,29 @@ export default function AboutScreen() {
 
   const handleSignOut = async () => {
     try {
-      console.log('Signing out user...');
-      await signOut();
-      console.log('Sign out successful, navigating to welcome...');
-      // Explicitly navigate to welcome screen and clear navigation stack
-      router.replace('/(auth)/welcome');
+      Alert.alert(
+        'Sign Out',
+        'Are you sure you want to sign out?',
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
+          },
+          {
+            text: 'Sign Out',
+            style: 'destructive',
+            onPress: async () => {
+              console.log('Signing out user...');
+              await signOut();
+              console.log('Sign out successful, navigating to welcome...');
+              // The useProtectedRoute hook in _layout.tsx will handle the navigation
+            },
+          },
+        ]
+      );
     } catch (error) {
       console.error('Error during sign out:', error);
-      // Even if signOut fails, navigate to welcome screen
-      router.replace('/(auth)/welcome');
+      Alert.alert('Error', 'Failed to sign out. Please try again.');
     }
   };
 
@@ -238,6 +252,9 @@ export default function AboutScreen() {
                   {user.firstName} {user.lastName}
                 </Text>
                 <Text style={styles.userEmail}>{user.primaryEmailAddress?.emailAddress}</Text>
+                <Text style={styles.userJoined}>
+                  Member since {new Date(user.createdAt).toLocaleDateString()}
+                </Text>
               </View>
               <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
                 <LogOut size={20} color="#FFFFFF" />
@@ -602,6 +619,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Inter-Regular',
     color: '#6B7280',
+    marginBottom: 4,
+  },
+  userJoined: {
+    fontSize: 12,
+    fontFamily: 'Inter-Regular',
+    color: '#9CA3AF',
   },
   signOutButton: {
     backgroundColor: '#DC2626',

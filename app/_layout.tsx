@@ -82,13 +82,18 @@ function useProtectedRoute(user: any) {
 }
 
 function RootLayoutContent() {
-  const { user, isLoaded } = useAuth();
+  const { user, isLoaded, isSignedIn } = useAuth();
   
   useProtectedRoute(user);
 
   useEffect(() => {
-    console.log('RootLayoutContent - Auth state:', { user: !!user, isLoaded });
-  }, [user, isLoaded]);
+    console.log('RootLayoutContent - Auth state:', { 
+      user: !!user, 
+      isLoaded, 
+      isSignedIn,
+      userId: user?.id 
+    });
+  }, [user, isLoaded, isSignedIn]);
 
   // Show loading while Clerk is initializing
   if (!isLoaded) {
