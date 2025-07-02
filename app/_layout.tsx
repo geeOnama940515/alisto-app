@@ -7,6 +7,7 @@ import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
 import * as SplashScreen from 'expo-splash-screen';
 import * as SecureStore from 'expo-secure-store';
+import Constants from 'expo-constants';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 
 SplashScreen.preventAutoHideAsync();
@@ -14,25 +15,39 @@ SplashScreen.preventAutoHideAsync();
 const tokenCache = {
   async getToken(key: string) {
     try {
-      return SecureStore.getItemAsync(key);
+      const item = await SecureStore.getItemAsync(key);
+      console.log('Retrieved token for key:', key, 'exists:', !!item);
+      return item;
     } catch (err) {
+      console.error('Error getting token:', err);
       return null;
     }
   },
   async saveToken(key: string, value: string) {
     try {
-      return SecureStore.setItemAsync(key, value);
+      await SecureStore.setItemAsync(key, value);
+      console.log('Saved token for key:', key);
     } catch (err) {
-      return;
+      console.error('Error saving token:', err);
     }
   },
 };
 
-const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!;
+// Get the publishable key from Constants (which reads from app.json or environment variables)
+const publishableKey = Constants.expoConfig?.extra?.clerkPublishableKey as string || process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
+
+// Debug logging
+console.log('=== CLERK DEBUG INFO ===');
+console.log('Environment:', __DEV__ ? 'development' : 'production');
+console.log('Constants available:', !!Constants.expoConfig);
+console.log('Extra config exists:', !!Constants.expoConfig?.extra);
+console.log('Publishable key exists:', !!publishableKey);
+console.log('Key preview:', publishableKey ? publishableKey.substring(0, 20) + '...' : 'NOT FOUND');
+console.log('========================');
 
 if (!publishableKey) {
   throw new Error(
-    'Missing Publishable Key. Please set EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY in your .env'
+    'Missing Publishable Key. Please check your app.config.js and EAS secrets. Key: ' + publishableKey
   );
 }
 
