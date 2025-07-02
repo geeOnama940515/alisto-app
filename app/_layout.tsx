@@ -9,6 +9,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import * as SecureStore from 'expo-secure-store';
 import Constants from 'expo-constants';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { useRouter, useSegments } from 'expo-router';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -51,12 +52,43 @@ if (!publishableKey) {
   );
 }
 
-function RootLayoutContent() {
-  const { isSignedIn, isLoaded } = useAuth();
+function useProtectedRoute(user: any) {
+  const segments = useSegments();
+  const router = useRouter();
 
   useEffect(() => {
-    console.log('RootLayoutContent - Auth state:', { isSignedIn, isLoaded });
-  }, [isSignedIn, isLoaded]);
+    const inAuthGroup = segments[0] === '(auth)';
+
+    console.log('=== NAVIGATION DEBUG ===');
+    console.log('User signed in:', !!user);
+    console.log('Current segments:', segments);
+    console.log('In auth group:', inAuthGroup);
+    console.log('========================');
+
+    if (
+      // If the user is not signed in and the initial segment is not anything in the auth group.
+      !user &&
+      !inAuthGroup
+    ) {
+      // Redirect to the sign-in page.
+      console.log('Redirecting to welcome page - user not signed in');
+      router.replace('/(auth)/welcome');
+    } else if (user && inAuthGroup) {
+      // Redirect away from the auth page.
+      console.log('Redirecting to tabs - user is signed in');
+      router.replace('/(tabs)');
+    }
+  }, [user, segments]);
+}
+
+function RootLayoutContent() {
+  const { user, isLoaded } = useAuth();
+  
+  useProtectedRoute(user);
+
+  useEffect(() => {
+    console.log('RootLayoutContent - Auth state:', { user: !!user, isLoaded });
+  }, [user, isLoaded]);
 
   // Show loading while Clerk is initializing
   if (!isLoaded) {
@@ -71,11 +103,11 @@ function RootLayoutContent() {
     <SafeAreaProvider>
       <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
         <Stack screenOptions={{ headerShown: false }}>
-          {isSignedIn ? (
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          ) : (
-            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          )}
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="news" options={{ headerShown: false }} />
+          <Stack.Screen name="services" options={{ headerShown: false }} />
+          <Stack.Screen name="assistance" options={{ headerShown: false }} />
           <Stack.Screen name="+not-found" />
         </Stack>
         <StatusBar style="auto" />
