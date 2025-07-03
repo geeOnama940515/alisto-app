@@ -1,21 +1,25 @@
-import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, ScrollView } from 'react-native';
 import { Link } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ArrowRight, MapPin, Users, Calendar, Heart } from 'lucide-react-native';
 
 const { width, height } = Dimensions.get('window');
 
 export default function WelcomeScreen() {
-  return (
+return (
+  <SafeAreaProvider>
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <LinearGradient
         colors={['#DC2626', '#B91C1C', '#991B1B']}
         style={styles.gradient}
       >
-        <View style={styles.content}>
+        <ScrollView
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}
+        >
           <View style={styles.header}>
-            <Image 
+            <Image
               source={{ uri: 'https://i0.wp.com/laoagcity.gov.ph/wp-content/uploads/2020/10/cropped-rsz_lc_seal-4.png?fit=512%2C515&ssl=1' }}
               style={styles.logo}
               resizeMode="contain"
@@ -77,10 +81,12 @@ export default function WelcomeScreen() {
               Made with ❤️ for the people of Laoag City
             </Text>
           </View>
-        </View>
+        </ScrollView>
       </LinearGradient>
     </SafeAreaView>
-  );
+  </SafeAreaProvider>
+);
+
 }
 
 const styles = StyleSheet.create({
